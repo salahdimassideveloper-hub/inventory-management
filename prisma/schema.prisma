@@ -1,0 +1,98 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  // N'ajoutez RIEN d'autre ici en Prisma 7
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String?
+  password  String
+  role      String   @default("USER")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  sales     Sale[]
+}
+
+model Category {
+  id        String    @id @default(cuid())
+  name      String
+  createdAt DateTime  @default(now())
+  products  Product[]
+}
+
+model Product {
+  id            String          @id @default(cuid())
+  name          String
+  barcode       String?         @unique
+  description   String?
+  purchasePrice Float
+  sellingPrice  Float
+  quantity      Int             @default(0)
+  minQuantity   Int             @default(5)
+  categoryId    String
+  category      Category        @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  supplierId    String?
+  supplier      Supplier?       @relation(fields: [supplierId], references: [id], onDelete: SetNull)
+  image         String?
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+  saleItems     SaleItem[]
+  movements     StockMovement[]
+  
+  @@index([categoryId])
+  @@index([supplierId])
+}
+
+model Supplier {
+  id        String    @id @default(cuid())
+  name      String
+  email     String?
+  phone     String?
+  address   String?
+  createdAt DateTime  @default(now())
+  products  Product[]
+}
+
+model Sale {
+  id        String     @id @default(cuid())
+  total     Float
+  discount  Float      @default(0)
+  userId    String
+  user      User       @relation(fields: [userId], references: [id])
+  items     SaleItem[]
+  createdAt DateTime   @default(now())
+  
+  @@index([userId])
+  @@index([createdAt])
+}
+
+model SaleItem {
+  id        String  @id @default(cuid())
+  quantity  Int
+  price     Float
+  productId String
+  product   Product @relation(fields: [productId], references: [id])
+  saleId    String
+  sale      Sale    @relation(fields: [saleId], references: [id], onDelete: Cascade)
+  
+  @@index([productId])
+  @@index([saleId])
+}
+
+model StockMovement {
+  id        String   @id @default(cuid())
+  type      String
+  quantity  Int
+  reason    String?
+  productId String
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  
+  @@index([productId])
+
+}
