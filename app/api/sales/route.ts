@@ -3,8 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 export const dynamic = "force-dynamic";
 
-export async function GET(req: NextRequest) {
-  try {
+export async function GET() {
     const sales = await db.sale.findMany({
       include: {
         user: true,
@@ -18,17 +17,12 @@ export async function GET(req: NextRequest) {
     });
 
     return NextResponse.json(sales, { status: 200 });
-  } catch (error) {
-    return NextResponse.json(
-      { error: "Erreur lors de la récupération des ventes" },
-      { status: 500 }
-    );
-  }
+  
 }
 
 export async function POST(req: NextRequest) {
   try {
-    const { userId, items, discount = 0, taxAmount = 0, notes } =
+    const { userId, items, discount = 0 } =
       await req.json();
 
     if (!userId || !items || items.length === 0) {

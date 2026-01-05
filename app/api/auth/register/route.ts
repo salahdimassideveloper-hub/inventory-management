@@ -1,11 +1,9 @@
 import { createUser, getUserByEmail } from "@/lib/auth";
-import { db } from "@/lib/db";
 import { NextRequest, NextResponse } from "next/server";
 
 export const dynamic = "force-dynamic";
 
 export async function POST(req: NextRequest) {
-  try {
     const { email, password, name, role } = await req.json();
 
     if (!email || !password || !name) {
@@ -29,10 +27,5 @@ export async function POST(req: NextRequest) {
       { message: "Utilisateur créé avec succès", user },
       { status: 201 }
     );
-  } catch (error) {
-    return NextResponse.json(
-      { error: "Erreur lors de l'inscription" },
-      { status: 500 }
-    );
-  }
+  
 }

@@ -71,7 +71,7 @@ export default function Login() {
               Pas encore de compte ?{" "}
               <Link href="/register">
                 <span className="text-purple-600 hover:text-purple-700 font-medium">
-                  S'inscrire
+                  inscrire
                 </span>
               </Link>
             </p>

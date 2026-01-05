@@ -4,10 +4,9 @@ import { NextRequest, NextResponse } from "next/server";
 export const dynamic = "force-dynamic";
 
 export async function GET(req: NextRequest) {
-  try {
     const { period = "month" } = Object.fromEntries(req.nextUrl.searchParams);
 
-    let startDate = new Date();
+    const startDate = new Date();
     switch (period) {
       case "week":
         startDate.setDate(startDate.getDate() - 7);
@@ -82,10 +81,5 @@ export async function GET(req: NextRequest) {
       },
       { status: 200 }
     );
-  } catch (error) {
-    return NextResponse.json(
-      { error: "Erreur lors de la récupération des rapports" },
-      { status: 500 }
-    );
-  }
+  
 }
