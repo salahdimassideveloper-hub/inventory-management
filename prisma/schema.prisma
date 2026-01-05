@@ -8,14 +8,19 @@ datasource db {
 }
 
 model User {
-  id        String   @id @default(cuid())
-  email     String   @unique
-  name      String?
-  password  String
-  role      String   @default("USER")
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  sales     Sale[]
+  id            String          @id @default(cuid())
+  email         String          @unique
+  name          String?
+  password      String
+  role          String          @default("VENDOR")
+  image         String?
+  isActive      Boolean         @default(true)
+  lastLogin     DateTime?
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+  sales         Sale[]
+  movements     StockMovement[]
+  auditLogs     AuditLog[]
 }
 
 model Category {
@@ -34,6 +39,7 @@ model Product {
   sellingPrice  Float
   quantity      Int             @default(0)
   minQuantity   Int             @default(5)
+  expiryDate    DateTime?
   categoryId    String
   category      Category        @relation(fields: [categoryId], references: [id], onDelete: Cascade)
   supplierId    String?
@@ -43,42 +49,57 @@ model Product {
   updatedAt     DateTime        @updatedAt
   saleItems     SaleItem[]
   movements     StockMovement[]
+  variants      ProductVariant[]
   
   @@index([categoryId])
   @@index([supplierId])
 }
 
 model Supplier {
-  id        String    @id @default(cuid())
+  id        String             @id @default(cuid())
   name      String
   email     String?
   phone     String?
   address   String?
-  createdAt DateTime  @default(now())
+  city      String?
+  postalCode String?
+  country   String?
+  contactName String?
+  paymentTerms String?
+  createdAt DateTime           @default(now())
+  updatedAt DateTime           @updatedAt
   products  Product[]
+  payments  SupplierPayment[]
 }
 
 model Sale {
   id        String     @id @default(cuid())
   total     Float
   discount  Float      @default(0)
+  taxAmount Float      @default(0)
+  status    String     @default("completed")
+  notes     String?
   userId    String
   user      User       @relation(fields: [userId], references: [id])
   items     SaleItem[]
   createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
   
   @@index([userId])
   @@index([createdAt])
+  @@index([status])
 }
 
 model SaleItem {
   id        String  @id @default(cuid())
   quantity  Int
   price     Float
+  discount  Float   @default(0)
   productId String
   product   Product @relation(fields: [productId], references: [id])
   saleId    String
   sale      Sale    @relation(fields: [saleId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
   
   @@index([productId])
   @@index([saleId])
@@ -91,8 +112,74 @@ model StockMovement {
   reason    String?
   productId String
   product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
   createdAt DateTime @default(now())
   
   @@index([productId])
+  @@index([userId])
+  @@index([createdAt])
+}
 
+model Settings {
+  id                String   @id @default(cuid())
+  storeName         String   @default("Ma Boutique")
+  storeAddress      String?
+  storeLogo         String?
+  taxRate           Float    @default(0.20)
+  currencySymbol    String   @default("€")
+  minStockThreshold Int      @default(5)
+  backupEnabled     Boolean  @default(true)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+}
+
+model SupplierPayment {
+  id         String   @id @default(cuid())
+  supplierId String
+  supplier   Supplier @relation(fields: [supplierId], references: [id], onDelete: Cascade)
+  amount     Float
+  status     String   @default("pending")
+  dueDate    DateTime?
+  paidDate   DateTime?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  
+  @@index([supplierId])
+  @@index([status])
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  action    String
+  entity    String
+  entityId  String
+  changes   String?
+  ipAddress String?
+  createdAt DateTime @default(now())
+  
+  @@index([userId])
+  @@index([createdAt])
+  @@index([action])
+}
+
+model ProductVariant {
+  id        String  @id @default(cuid())
+  productId String
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  name      String
+  value     String
+  
+  @@index([productId])
+}
+
+model Inventory {
+  id        String   @id @default(cuid())
+  name      String
+  status    String   @default("pending")
+  startDate DateTime
+  endDate   DateTime?
+  createdAt DateTime @default(now())
 }
